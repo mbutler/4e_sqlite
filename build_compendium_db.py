@@ -247,6 +247,11 @@ def parse_batch_data(content):
     """
     Parse dataN.js file.
     Returns dict of {id: html_content}
+    Format: od.reader.jsonp_batch_data(date, "category", {
+        id1: "html content",
+        id2: "html content",
+    })
+    Note: Keys may be unquoted identifiers.
     """
     args = extract_jsonp_payload(content, 'jsonp_batch_data')
     if not args:
@@ -258,27 +263,40 @@ def parse_batch_data(content):
         return {}
     
     json_str = args[brace_start:]
-    result = safe_json_loads(json_str)
-    if result is None:
-        # Try a more aggressive approach for HTML content
-        # Sometimes HTML has weird escape issues
-        try:
-            # Use a regex to extract key-value pairs
-            result = {}
-            pattern = r'"([^"]+)":\s*"((?:[^"\\]|\\.)*)"\s*[,}]'
-            for match in re.finditer(pattern, json_str, re.DOTALL):
-                key = match.group(1)
-                value = match.group(2)
-                # Unescape the value
-                value = value.replace('\\"', '"').replace('\\n', '\n').replace('\\t', '\t')
-                result[key] = value
-            if result:
-                return result
-        except:
-            pass
-        print(f"Error parsing batch data")
-        return {}
-    return result
+    
+    # First try: add quotes around unquoted keys to make valid JSON
+    # Pattern: matches identifier: at start of line or after comma/brace
+    fixed_json = re.sub(r'(\n\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*:\s*")', r'\1"\2"\3', json_str)
+    result = safe_json_loads(fixed_json)
+    if result:
+        return result
+    
+    # Fallback: regex extraction for unquoted keys
+    result = {}
+    # Pattern for unquoted key followed by double-quoted value
+    pattern_double = r'([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*"((?:[^"\\]|\\.)*)"'
+    for match in re.finditer(pattern_double, json_str, re.DOTALL):
+        key = match.group(1)
+        value = match.group(2)
+        # Unescape the value
+        value = value.replace('\\"', '"').replace('\\n', '\n').replace('\\t', '\t')
+        result[key] = value
+    
+    # Also check for single-quoted values
+    pattern_single = r"([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*'((?:[^'\\]|\\.)*)'"
+    for match in re.finditer(pattern_single, json_str, re.DOTALL):
+        key = match.group(1)
+        if key not in result:  # Don't overwrite double-quoted matches
+            value = match.group(2)
+            # Unescape the value
+            value = value.replace("\\'", "'").replace('\\n', '\n').replace('\\t', '\t')
+            result[key] = value
+    
+    if result:
+        return result
+    
+    print(f"Error parsing batch data")
+    return {}
 
 
 def parse_index(content):
@@ -513,6 +531,67 @@ def parse_level(level_raw):
         return int(match.group(1))
     
     return None
+
+
+def extract_weapon_data(html_body):
+    """
+    Extract weapon properties from HTML body.
+    Returns dict with weapon_category, hands_required, weapon_group, damage, proficiency_bonus, properties
+    """
+    result = {
+        'weapon_category': None,
+        'hands_required': None,
+        'weapon_group': None,
+        'damage': None,
+        'proficiency_bonus': None,
+        'properties': None
+    }
+    
+    if not html_body:
+        return result
+    
+    text = html_to_text(html_body)
+    
+    # Extract category and hands from pattern like "Military one-handed melee weapon"
+    # or "Simple two-handed ranged weapon"
+    cat_match = re.search(r'(Superior|Military|Simple|Improvised)\s+(one-handed|two-handed)?\s*(melee|ranged)?\s*weapon', text, re.IGNORECASE)
+    if cat_match:
+        result['weapon_category'] = cat_match.group(1).title()  # Normalize case
+        if cat_match.group(2):
+            result['hands_required'] = cat_match.group(2).title()
+    
+    # Extract damage from "<b>Damage</b>: 1d8" or "Damage: 1d8"
+    damage_match = re.search(r'Damage\s*:\s*(\d+d\d+(?:\s*or\s*\d+d\d+)?)', text)
+    if damage_match:
+        result['damage'] = damage_match.group(1)
+    
+    # Extract proficiency from "Proficient: +3" or "Prof.: +2"
+    prof_match = re.search(r'Prof(?:icient|\.?)?\s*:\s*\+?(\d+)', text)
+    if prof_match:
+        result['proficiency_bonus'] = '+' + prof_match.group(1)
+    
+    # Extract group from HTML - look for <b>Group</b>: Heavy blade
+    group_match = re.search(r'Group\s*:\s*([A-Za-z][A-Za-z\s]+?)(?:\s*\(|<|$)', text)
+    if group_match:
+        group = group_match.group(1).strip()
+        # Clean up - take first meaningful part
+        group = re.split(r'\s{2,}|\.|,', group)[0].strip()
+        if group and len(group) < 30:
+            result['weapon_group'] = group
+    
+    # Extract properties from HTML - look for <b>Properties</b>: Versatile...
+    props_match = re.search(r'Properties\s*:\s*([A-Za-z][^<]+?)(?:\s*<b>Group|$)', text, re.DOTALL)
+    if props_match:
+        props = props_match.group(1).strip()
+        # Clean up - remove parenthetical explanations
+        props = re.sub(r'\([^)]+\)', '', props)
+        props = re.sub(r'\s+', ' ', props).strip()
+        # Take just the property names
+        props_list = [p.strip() for p in re.split(r'[,.]', props) if p.strip() and len(p.strip()) < 30]
+        if props_list:
+            result['properties'] = ', '.join(props_list[:5])  # Limit to 5 properties
+    
+    return result
 
 
 # =============================================================================
@@ -755,6 +834,8 @@ def create_schema(conn):
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
             type TEXT,
+            size TEXT,
+            creature_type TEXT,
             source_book TEXT,
             html_body TEXT,
             search_text TEXT
@@ -817,6 +898,7 @@ def create_schema(conn):
         CREATE TABLE IF NOT EXISTS implements (
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
+            type TEXT,
             source_book TEXT,
             html_body TEXT,
             search_text TEXT
@@ -1216,6 +1298,75 @@ def insert_generic(conn, table_name, columns, rows, html_bodies, search_texts, c
     conn.commit()
 
 
+def insert_weapons(conn, columns, rows, html_bodies, search_texts):
+    """Insert weapon data with HTML parsing to extract structured fields."""
+    cursor = conn.cursor()
+    col_map = {col: idx for idx, col in enumerate(columns)}
+    
+    # Debug: print actual columns
+    # print(f"  Weapon columns: {columns}")
+    
+    for row in rows:
+        try:
+            # Get basic fields from listing
+            entry_id = normalize_value(row[col_map.get('ID', 0)])
+            name = normalize_value(row[col_map.get('Name', 1)] if 'Name' in col_map and col_map.get('Name') < len(row) else '')
+            source_book = normalize_value(row[col_map.get('SourceBook')] if 'SourceBook' in col_map and col_map.get('SourceBook') < len(row) else '')
+            
+            html_body = html_bodies.get(entry_id, '')
+            search_text = search_texts.get(entry_id, '')
+            
+            # In the actual listing:
+            # - "Type" column contains weapon_group (Light blade, Mace, Axe, etc.)
+            # - "Level" column contains weapon_category (Simple, Military, Superior, Improvised) for mundane
+            #   OR a level number for magic weapons
+            # - "Cost" is price, "Rarity" is rarity
+            
+            # Get from listing with correct mapping
+            weapon_group = normalize_value(row[col_map.get('Type')] if 'Type' in col_map and col_map.get('Type') < len(row) else None)
+            level_val = normalize_value(row[col_map.get('Level')] if 'Level' in col_map and col_map.get('Level') < len(row) else None)
+            price = normalize_value(row[col_map.get('Cost')] if 'Cost' in col_map and col_map.get('Cost') < len(row) else None)
+            rarity = normalize_value(row[col_map.get('Rarity')] if 'Rarity' in col_map and col_map.get('Rarity') < len(row) else None)
+            
+            # Only use as weapon_category if it's a valid category name
+            valid_categories = {'simple', 'military', 'superior', 'improvised'}
+            weapon_category = level_val.title() if level_val and level_val.lower() in valid_categories else None
+            
+            # These aren't in the listing, need to parse from HTML
+            hands_required = None
+            proficiency_bonus = None
+            damage = None
+            weapon_range = None
+            weight = None
+            properties = None
+            
+            # Parse additional fields from HTML
+            parsed = extract_weapon_data(html_body)
+            hands_required = parsed['hands_required']
+            damage = parsed['damage']
+            proficiency_bonus = parsed['proficiency_bonus']
+            properties = parsed['properties']
+            
+            # Use parsed category/group if listing was empty
+            if not weapon_category:
+                weapon_category = parsed['weapon_category']
+            if not weapon_group:
+                weapon_group = parsed['weapon_group']
+            
+            cursor.execute('''
+                INSERT OR REPLACE INTO weapons 
+                (id, name, weapon_category, hands_required, proficiency_bonus, damage, range, 
+                 price, weight, weapon_group, properties, source_book, html_body, search_text)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (entry_id, name, weapon_category, hands_required, proficiency_bonus, damage, weapon_range,
+                  price, weight, weapon_group, properties, source_book, html_body, search_text))
+            
+        except Exception as e:
+            print(f"Error inserting weapon {row}: {e}")
+    
+    conn.commit()
+
+
 # =============================================================================
 # Main Build Process
 # =============================================================================
@@ -1313,7 +1464,7 @@ def build_database():
         },
         'traps': {
             'id': 'ID', 'name': 'Name', 'type': 'Type', 'level_raw': 'Level',
-            'role': 'Role', 'xp': 'XP', 'source_book': 'SourceBook'
+            'role': 'GroupRole', 'xp': 'XP', 'source_book': 'SourceBook'
         },
         'diseases': {
             'id': 'ID', 'name': 'Name', 'level_raw': 'Level', 'source_book': 'SourceBook'
@@ -1325,7 +1476,8 @@ def build_database():
             'id': 'ID', 'name': 'Name', 'alignment': 'Alignment', 'source_book': 'SourceBook'
         },
         'companions': {
-            'id': 'ID', 'name': 'Name', 'type': 'Type', 'source_book': 'SourceBook'
+            'id': 'ID', 'name': 'Name', 'type': 'Type', 'size': 'Size',
+            'creature_type': 'CreatureType', 'source_book': 'SourceBook'
         },
         'glossary': {
             'id': 'ID', 'name': 'Name', 'category': 'Category', 'type': 'Type', 'source_book': 'SourceBook'
@@ -1342,7 +1494,7 @@ def build_database():
             'weapon_group': 'Group', 'properties': 'Properties', 'source_book': 'SourceBook'
         },
         'implements': {
-            'id': 'ID', 'name': 'Name', 'source_book': 'SourceBook'
+            'id': 'ID', 'name': 'Name', 'type': 'Type', 'source_book': 'SourceBook'
         },
     }
     
@@ -1364,6 +1516,8 @@ def build_database():
         # Special handling for powers (with enhancements)
         if category == 'power':
             insert_powers(conn, columns, rows, html_bodies, search_texts)
+        elif category == 'weapon':
+            insert_weapons(conn, columns, rows, html_bodies, search_texts)
         else:
             mapping = generic_mappings.get(table_name, {})
             if mapping:

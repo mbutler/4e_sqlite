@@ -1037,6 +1037,85 @@ if (isset($_GET['ajax'])) {
             white-space: nowrap;
         }
         
+        /* Poison headers */
+        .stat-block h1.poison {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            background: #4a2a4a;
+            color: white;
+            padding: 8px 12px;
+            margin: -16px -16px 12px -16px;
+            font-size: 14px;
+            font-weight: normal;
+        }
+        
+        .stat-block h1.poison span.milevel {
+            font-size: 11px;
+            opacity: 0.9;
+            margin-left: 12px;
+            white-space: nowrap;
+        }
+        
+        /* Disease headers */
+        .stat-block h1.disease {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            background: #3a4a2a;
+            color: white;
+            padding: 8px 12px;
+            margin: -16px -16px 12px -16px;
+            font-size: 14px;
+            font-weight: normal;
+        }
+        
+        /* Trap headers */
+        .stat-block h1.trap {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            background: #5a3a2a;
+            color: white;
+            padding: 8px 12px;
+            margin: -16px -16px 12px -16px;
+            font-size: 14px;
+            font-weight: normal;
+        }
+        
+        /* DM/Terrain headers */
+        .stat-block h1.dm {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            background: #3a3a4a;
+            color: white;
+            padding: 8px 12px;
+            margin: -16px -16px 12px -16px;
+            font-size: 14px;
+            font-weight: normal;
+        }
+        
+        /* Familiar headers */
+        .stat-block h1.familiar {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            background: #2a4a5a;
+            color: white;
+            padding: 8px 12px;
+            margin: -16px -16px 12px -16px;
+            font-size: 14px;
+            font-weight: normal;
+        }
+        
+        .stat-block h1.familiar span.level {
+            font-size: 11px;
+            opacity: 0.9;
+            margin-left: 12px;
+            white-space: nowrap;
+        }
+        
         /* Monster headers */
         .stat-block h1.monster {
             background: var(--monster-header);

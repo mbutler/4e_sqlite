@@ -1205,7 +1205,7 @@ def insert_powers(conn, columns, rows, html_bodies, search_texts):
             
             # Insert keywords
             if keywords_raw:
-                keywords = [k.strip() for k in keywords_raw.split(',') if k.strip()]
+                keywords = [k.strip() for k in keywords_raw.split(',') if k.strip() and len(k.strip()) > 1]
                 for kw in keywords:
                     cursor.execute('''
                         INSERT OR IGNORE INTO power_keywords (power_id, keyword)

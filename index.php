@@ -479,11 +479,24 @@ if (isset($_GET['ajax'])) {
         header {
             grid-column: 1 / -1;
             display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 12px 16px;
+            flex-direction: column;
+            gap: 0;
+            padding: 0;
             background: var(--bg-panel);
             border-bottom: 1px solid var(--border);
+        }
+        
+        .header-top {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 10px 16px;
+        }
+        
+        .header-categories {
+            border-top: 1px solid var(--border);
+            padding: 6px 16px;
+            background: var(--bg);
         }
         
         .logo {
@@ -1363,9 +1376,35 @@ if (isset($_GET['ajax'])) {
             font-size: 12px;
         }
         
+        /* Mobile close button - hidden on desktop */
+        .detail-close-mobile {
+            display: none;
+            position: sticky;
+            top: 0;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 12px;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        .detail-close-mobile:hover {
+            background: var(--bg);
+        }
+        
+        .detail-close-mobile::before {
+            content: "←";
+            font-size: 16px;
+        }
+        
         /* Mobile responsive */
         @media (max-width: 1024px) {
-            .app {
+            .app,
+            .app.detail-closed {
                 grid-template-columns: 200px 1fr;
             }
             
@@ -1383,56 +1422,97 @@ if (isset($_GET['ajax'])) {
                 display: none;
             }
             
-            header {
-                flex-wrap: wrap;
+            .header-top {
                 gap: 10px;
             }
             
-            .categories {
-                order: 3;
-                width: 100%;
-                margin: 0 -16px;
-                padding: 4px 16px;
+            .header-categories {
+                padding: 6px 12px;
             }
         }
         
         @media (max-width: 768px) {
-            .app {
+            .app,
+            .app.detail-closed {
                 grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+            }
+            
+            header {
+                position: sticky;
+                top: 0;
+                z-index: 100;
             }
             
             .sidebar {
                 display: none;
             }
             
-            header {
-                padding: 10px 12px;
+            .results {
+                grid-column: 1;
+                width: 100%;
+                max-width: 100vw;
+                overflow-y: auto;
+            }
+            
+            .header-top {
+                padding: 8px 12px;
+                flex-direction: column;
+                gap: 8px;
             }
             
             .logo {
                 font-size: 13px;
+                align-self: flex-start;
             }
             
             .search-container {
-                flex: 1 1 100%;
-                order: 2;
+                width: 100%;
+                max-width: none;
+            }
+            
+            .header-categories {
+                padding: 8px 12px;
             }
             
             .categories {
-                order: 3;
-                width: calc(100% + 24px);
-                margin: 0 -12px;
-                padding: 4px 12px;
+                flex-wrap: wrap;
+                overflow-x: visible;
             }
             
             .category-btn {
-                padding: 6px 8px;
-                font-size: 10px;
+                padding: 6px 10px;
+                font-size: 11px;
             }
             
             .detail {
-                width: 100%;
+                position: fixed;
+                top: 0;
                 left: 0;
+                right: 0;
+                bottom: 0;
+                width: 100%;
+                z-index: 300;
+            }
+            
+            .detail-close-mobile {
+                display: flex;
+            }
+            
+            /* Show only first 2 columns on mobile */
+            .results-table th:nth-child(n+3),
+            .results-table td:nth-child(n+3) {
+                display: none;
+            }
+            
+            .results-table th,
+            .results-table td {
+                padding: 8px;
+                font-size: 12px;
+            }
+            
+            .results-table td {
+                max-width: none;
             }
         }
     </style>
@@ -1440,16 +1520,19 @@ if (isset($_GET['ajax'])) {
 <body>
     <div class="app detail-closed" id="app">
         <header>
-            <div class="logo">4e Compendium <span>Search</span></div>
-            
-            <div class="search-container">
-                <input type="text" class="search-input" id="searchInput" 
-                       placeholder="Search... (e.g., fire AND damage, teleport*, &quot;ongoing fire&quot;)">
+            <div class="header-top">
+                <div class="logo">4e Compendium <span>Search</span></div>
+                
+                <div class="search-container">
+                    <input type="text" class="search-input" id="searchInput" 
+                           placeholder="Search... (e.g., fire AND damage, teleport*, &quot;ongoing fire&quot;)">
+                </div>
             </div>
             
-            <div class="categories" id="categoryTabs">
-                <button class="category-btn active" data-category="powers">Powers</button>
-                <button class="category-btn" data-category="monsters">Monsters</button>
+            <div class="header-categories">
+                <div class="categories" id="categoryTabs">
+                    <button class="category-btn active" data-category="powers">Powers</button>
+                    <button class="category-btn" data-category="monsters">Monsters</button>
                 <button class="category-btn" data-category="feats">Feats</button>
                 <button class="category-btn" data-category="items">Items</button>
                 <button class="category-btn" data-category="classes">Classes</button>
@@ -1467,7 +1550,8 @@ if (isset($_GET['ajax'])) {
                 <button class="category-btn" data-category="deities">Deities</button>
                 <button class="category-btn" data-category="diseases">Diseases</button>
                 <button class="category-btn" data-category="poisons">Poisons</button>
-                <button class="category-btn" data-category="glossary">Glossary</button>
+                    <button class="category-btn" data-category="glossary">Glossary</button>
+                </div>
             </div>
         </header>
         
@@ -1499,6 +1583,7 @@ if (isset($_GET['ajax'])) {
         </main>
         
         <aside class="detail closed" id="detailPanel">
+            <div class="detail-close-mobile" id="detailCloseMobile">Back to results</div>
             <div class="detail-content" id="detailContent"></div>
         </aside>
     </div>
@@ -1537,6 +1622,7 @@ if (isset($_GET['ajax'])) {
             nextPage: document.getElementById('nextPage'),
             detailPanel: document.getElementById('detailPanel'),
             detailContent: document.getElementById('detailContent'),
+            detailCloseMobile: document.getElementById('detailCloseMobile'),
             clearFilters: document.getElementById('clearFilters')
         };
         
@@ -2112,6 +2198,7 @@ if (isset($_GET['ajax'])) {
         });
         
         dom.clearFilters.addEventListener('click', clearFilters);
+        dom.detailCloseMobile.addEventListener('click', closeDetail);
         
         // Keyboard navigation
         document.addEventListener('keydown', (e) => {

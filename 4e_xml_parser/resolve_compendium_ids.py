@@ -90,7 +90,7 @@ def xml_to_compendium_id(xml_id: str | None) -> tuple[str | None, str | None, st
 def main() -> int:
     script_dir = Path(__file__).resolve().parent
     grants_path = script_dir / "4e_grants.db"
-    compendium_path = script_dir / "4e_compendium.db"
+    compendium_path = script_dir.parent / "4e_compendium.db"
 
     if not grants_path.exists():
         print(f"Error: Grants DB not found: {grants_path}", file=sys.stderr)

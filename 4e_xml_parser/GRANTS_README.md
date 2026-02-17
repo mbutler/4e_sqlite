@@ -8,7 +8,7 @@ Standalone database of D&D 4E grant relationships and rule data, extracted from 
 # 1. Extract grants from XML (required)
 python3 extract_grants.py
 
-# 2. Resolve IDs to compendium (optional, requires 4e_compendium.db)
+# 2. Resolve IDs to compendium (optional, requires 4e_compendium.db in project root)
 python3 resolve_compendium_ids.py
 ```
 
@@ -62,8 +62,8 @@ FROM grants WHERE granter_name = 'Solar Enemy';
 SELECT stat_name, value, bonus_type FROM stat_additions
 WHERE granter_xml_id = 'ID_FMP_RACE_1';
 
--- Join to compendium for full power details (run from sqlite3)
--- First: ATTACH DATABASE '4e_compendium.db' AS comp;
+-- Join to compendium for full power details (run from sqlite3 in 4e_xml_parser/)
+-- First: ATTACH DATABASE '../4e_compendium.db' AS comp;
 -- Then:
 SELECT g.granter_name, g.requires, p.name, p.level, p.power_usage
 FROM grants g

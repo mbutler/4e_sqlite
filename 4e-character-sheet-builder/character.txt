@@ -1,0 +1,63 @@
+====== Created Using Wizards of the Coast D&D Character Builder ======
+The Seventh Sentinel, level 22
+Warforged, Fighter, Polearm Master, Eternal Defender
+Fighter: Combat Superiority
+Fighter Talents: Tempest Technique
+Background: Arcane Student Who Saw Too Much (Arcane Student Who Saw Too Much Benefit)
+
+FINAL ABILITY SCORES
+Str 26, Con 17, Dex 22, Int 12, Wis 13, Cha 10.
+
+STARTING ABILITY SCORES
+Str 16, Con 13, Dex 16, Int 10, Wis 11, Cha 8.
+
+AC: 34 Fort: 40 Reflex: 35 Will: 32
+HP: 158 Surges: 12 Surge Value: 39
+
+TRAINED SKILLS
+Heal +17, Endurance +24, Athletics +23
+
+UNTRAINED SKILLS
+Acrobatics +16, Arcana +12, Bluff +11, Diplomacy +11, Dungeoneering +12, History +12, Insight +14, Intimidate +13, Nature +12, Perception +14, Religion +12, Stealth +16, Streetwise +11, Thievery +16
+
+FEATS
+Feat User Choice: Flail Expertise
+Feat User Choice: Improved Defenses
+Level 1: Spiked Chain Training
+Level 2: Warforged Superiority
+Level 4: Two-Weapon Fighting
+Level 6: Two-Weapon Threat
+Level 8: Agile Superiority
+Level 10: Dragging Flail
+Level 11: Two-Weapon Opening
+Level 12: Plunging Blade (retrained to Flail Mastery at Level 22)
+Level 14: Agile Tempest
+Level 16: Lashing Flail
+Level 18: Tactical Superiority
+Level 20: Daunting Challenge (retrained to Mobile Warrior at Level 21)
+Feat User Choice: Long Step
+Level 21: Two-Weapon Flurry
+Level 22: Rapid Combat Challenge
+
+POWERS
+Fighter at-will 1: Dual Strike
+Fighter at-will 1: Wicked Strike
+Fighter encounter 1: Funneling Flurry
+Fighter daily 1: Comeback Strike
+Fighter utility 2: Iron Resurgence
+Fighter encounter 3: Sweeping Blow
+Fighter daily 5: Dervish's Challenge
+Fighter utility 6: Rapid Advance
+Fighter encounter 7: Stay Down
+Fighter daily 9: Victorious Surge
+Fighter utility 10: Defensive Advance
+Fighter encounter 13: Scattering Swing (replaces Sweeping Blow)
+Fighter daily 15: Serpent Dance Strike (replaces Comeback Strike)
+Fighter utility 16: Iron Warrior
+Fighter encounter 17: Warrior's Challenge (replaces Funneling Flurry)
+Fighter daily 19: Relentless Assailant (replaces Victorious Surge)
+Fighter utility 22: Instant Getaway
+
+ITEMS
+Dwarven Crysteel Armor +4, Circlet of Arkhosia (paragon tier), Backlash Tattoo (heroic tier), Salve of Power (heroic tier), Zaarani's Solitaire (heroic tier), Master's Blade Spiked chain +4, Battlestrider Greaves (paragon tier), Steadfast Amulet +4, Iron Armbands of Power (paragon tier), Diamond Cincture (paragon tier), Pearl of Power (paragon tier), Horreb Ritual Cube (paragon tier), Champion's Ring (paragon tier), Foe Binder Ring (paragon tier), Davros Elden's Defensive Step (heroic tier), Davros Elden's Hasty Resurgence (heroic tier), Lightning Reflex Gloves (paragon tier), Pitted Flowstone (paragon tier), Siberys Shard of Merciless Cold (paragon tier), Frozen Whetstone (paragon tier) (5), Southern Star Ring the Bell, Dice of Auspicious Fortune (paragon tier)
+====== Copy to Clipboard and Press the Import Button on the Summary Tab ======

@@ -138,10 +138,18 @@ WHERE g.granted_type = 'Power'
 
 ### Same directory
 
-If both DBs are in the same directory as your script:
+If both DBs are in the same directory:
 
 ```sql
 ATTACH DATABASE '4e_compendium.db' AS comp;
+```
+
+### From 4e_xml_parser (compendium in project root)
+
+The compendium DB lives in the project root; grants DB is in `4e_xml_parser/`:
+
+```sql
+ATTACH DATABASE '../4e_compendium.db' AS comp;
 ```
 
 ### Different paths
